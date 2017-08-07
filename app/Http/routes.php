@@ -14,11 +14,12 @@
 //Route::get('/', function () {
 //    return view('welcome');
 //});
-
-
-
-// 前台路由组
-Route::group(['prefix'=>'home','namespace'=>'Home'], function(){
-    //  前台首页页面路由
-    Route::get('index','FirstController@index');
+//后台路由
+Route::group(['prefix'=>'admin','namespace'=>'Admin'],function(){
+//    首页
+    Route::get('/','AdminController@index');
+//    商品分类
+    Route::resource('cate','CateController');
 });
+
+

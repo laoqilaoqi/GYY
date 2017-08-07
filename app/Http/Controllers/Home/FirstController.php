@@ -17,7 +17,7 @@ class FirstController extends Controller
     //  前台首页页面
     public function index()
     {
-        return view('home.index');
+        return view('Home.index');
     }
 
     /**
