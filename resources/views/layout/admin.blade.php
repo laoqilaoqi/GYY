@@ -155,10 +155,11 @@
     <script src="/admins/custom-plugins/fileinput.js"></script>
 
     <!-- jQuery-UI Dependent Scripts -->
-    <script src="/admins/jui/js/jquery-ui-1.9.2.min.js"></script>
+    <script src="/admins/jui/js/jquery-ui-1.9.2.min.js"></script>l
     <script src="/admins/jui/jquery-ui.custom.min.js"></script>
     <script src="/admins/jui/js/jquery.ui.touch-punch.js"></script>
-
+    {{--引入layer插件--}}
+    <script type="text/javascript" src="/layer/layer.js"></script>
     <!-- Plugin Scripts -->
     <!--[if lt IE 9]>
     <script src="/admins/js/libs/excanvas.min.js"></script>

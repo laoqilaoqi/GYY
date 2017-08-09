@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Model\Cate;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class CateController extends Controller
 {
@@ -14,10 +16,31 @@ class CateController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //商品列表页
-        return view('admin.cate.index');
+        //分类列表页
+//        $cates = Cate::("concat(type_path,',',type_pid)") ->get()
+//       $cates = Cate::select(Cate::raw("*,concat(type_path,',',type_pid) as paths"))->
+//       orderBy('paths')->get();
+
+        $res = DB::table('jd_type')->
+        select(DB::raw("*,concat(type_path,',',type_id) as paths"))->
+        orderBy('paths')->where('type_name','like','%'.$request->input('search').'%')->
+        paginate($request->input('num',3));
+
+        foreach($res as $k => $v){
+
+            //拆分path
+            $data = explode(',',$v->type_path);
+
+            $count = count($data)-1;
+
+            $v->type_name = str_repeat('|--', $count).$v->type_name;
+        }
+
+
+//            dd($res);
+        return view('admin.cate.index',compact('res','request'));
     }
 
     /**
@@ -27,7 +50,24 @@ class CateController extends Controller
      */
     public function create()
     {
-        //
+        //添加分类
+        $res = DB::table('jd_type')->
+        select(DB::raw("*,concat(type_path,',',type_id) as paths"))->
+        orderBy('paths')->
+        get();
+
+        //通过path判断
+        foreach($res as $k => $v){
+
+            //拆分path
+            $data = explode(',',$v->type_path);
+
+            $count = count($data)-1;
+
+            $v->type_name = str_repeat('|--', $count).$v->type_name;
+        }
+
+        return view('admin.cate.add',compact('res'));
     }
 
     /**
@@ -39,6 +79,27 @@ class CateController extends Controller
     public function store(Request $request)
     {
         //
+        $res =  $request->except('_token');
+//        dd($res);
+        if ($res['type_pid'] == '0') {
+
+            //凭借path
+            $res['type_path'] = '0';
+        } else {
+
+            $info = Cate::where('type_id', $res['type_pid'])->first();
+
+//            dd($info);
+            $res['type_path'] = $info->type_path.','.$info->type_id;
+        }
+
+
+        $re  = Cate::create($res);
+        if($re){
+            return redirect('admin/cate');
+        }else{
+            return back()->with('msg','添加失败');
+        }
     }
 
     /**
@@ -61,6 +122,25 @@ class CateController extends Controller
     public function edit($id)
     {
         //
+        $cates =  Cate::find($id);
+//        dd($cate);
+        $res = DB::table('jd_type')->
+        select(DB::raw("*,concat(type_path,',',type_id) as paths"))->
+        orderBy('paths')->
+        get();
+
+        //通过path判断
+        foreach($res as $k => $v){
+
+            //拆分path
+            $data = explode(',',$v->type_path);
+
+            $count = count($data)-1;
+
+            $v->type_name = str_repeat('|--', $count).$v->type_name;
+        }
+        return view('admin.cate.edit',compact('res','cates'));
+
     }
 
     /**
@@ -73,7 +153,32 @@ class CateController extends Controller
     public function update(Request $request, $id)
     {
         //
+
+//        dd($request->all());
+
+        $res =  $request->except('_token');
+//        dd($res);
+        if ($res['type_pid'] == '0') {
+
+            //凭借path
+            $res['type_path'] = '0';
+        } else {
+
+            $info = Cate::where('type_id', $res['type_pid'])->first();
+
+//            dd($info);
+            $res['type_path'] = $info->type_path.','.$info->type_id;
+        }
+
+
+        $re  = Cate::create($res);
+        if($re){
+            return redirect('admin/cate');
+        }else{
+            return back()->with('msg','修改失败');
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -84,5 +189,34 @@ class CateController extends Controller
     public function destroy($id)
     {
         //
+        $cates = Cate::find($id);
+
+//        是否有二级类
+        $count =  Cate::where('type_pid',$id)->count();
+
+//        dd($cate);
+        if($cates->type_pid == 0 && $count){
+
+            $data = [
+                'status'=>2,
+                'msg'=>'一级分类不允许删除'
+            ];
+            return $data;
+        }
+        $re = $cates->delete();
+        //        返回修改状态
+        if($re){
+            $data = [
+                'status'=>0,
+                'msg'=>'删除成功'
+            ];
+        }else{
+            $data = [
+                'status'=>1,
+                'msg'=>'删除失败'
+            ];
+        }
+        return $data;
     }
+
 }
