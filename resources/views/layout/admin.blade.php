@@ -116,7 +116,14 @@
 
                         </ul>
                     </li>
+                    <li>
+                        <a href="#"><i class="icon-gift"></i> 商品模块</a>
+                        <ul class="closed">
+                            <li><a href="{{url('admin/good')}}">浏览商品</a></li>
+                            <li><a href="{{url('admin/good/create')}}">添加商品</a></li>
 
+                        </ul>
+                    </li>
 
 
                 </ul>

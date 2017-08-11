@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Model\Cate;
+use App\Http\Model\Cate;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -19,11 +19,12 @@ class CateController extends Controller
     public function index(Request $request)
     {
         //分类列表页
+
 //        $cates = Cate::("concat(type_path,',',type_pid)") ->get()
 //       $cates = Cate::select(Cate::raw("*,concat(type_path,',',type_pid) as paths"))->
 //       orderBy('paths')->get();
 
-        $res = DB::table('jd_type')->
+        $res = DB::table('type')->
         select(DB::raw("*,concat(type_path,',',type_id) as paths"))->
         orderBy('paths')->where('type_name','like','%'.$request->input('search').'%')->
         paginate($request->input('num',3));
@@ -51,7 +52,7 @@ class CateController extends Controller
     public function create()
     {
         //添加分类
-        $res = DB::table('jd_type')->
+        $res = DB::table('type')->
         select(DB::raw("*,concat(type_path,',',type_id) as paths"))->
         orderBy('paths')->
         get();
@@ -124,7 +125,7 @@ class CateController extends Controller
         //
         $cates =  Cate::find($id);
 //        dd($cate);
-        $res = DB::table('jd_type')->
+        $res = DB::table('type')->
         select(DB::raw("*,concat(type_path,',',type_id) as paths"))->
         orderBy('paths')->
         get();
@@ -170,8 +171,9 @@ class CateController extends Controller
             $res['type_path'] = $info->type_path.','.$info->type_id;
         }
 
+        $cate = Cate::find($id);
+        $re =  $cate->update($res);
 
-        $re  = Cate::create($res);
         if($re){
             return redirect('admin/cate');
         }else{

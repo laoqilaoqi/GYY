@@ -11,9 +11,9 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+//Route::get('/', function () {
+//    return view('welcome');
+//});
 //后台路由
 Route::group(['prefix'=>'admin','namespace'=>'Admin'],function(){
 //    首页
@@ -21,7 +21,7 @@ Route::group(['prefix'=>'admin','namespace'=>'Admin'],function(){
 //    商品分类
     Route::resource('cate','CateController');
 //    商品
-    Route::resource('goods','GoodController');
+    Route::resource('good','GoodController');
 });
 
 

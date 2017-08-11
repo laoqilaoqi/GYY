@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Model\Good;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
+use phpDocumentor\Reflection\DocBlockFactory;
 
 class GoodController extends Controller
 {
@@ -14,9 +17,13 @@ class GoodController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        //商品列表
+        $res = Good::where('goods_name', 'like', '%'.$request->input('search').'%')->
+        join('type', 'goods_id', '=', 'type.type_id')->
+        paginate($request->input('num',3));
+        return view('admin.good.index',compact('res','request'));
     }
 
     /**
@@ -26,7 +33,26 @@ class GoodController extends Controller
      */
     public function create()
     {
-        //
+        //添加商品
+
+        $res = DB::table('type')->
+        select(DB::raw("*,concat(type_path,',',type_id) as paths"))->
+        orderBy('paths')->
+        get();
+
+        //通过path判断
+        foreach($res as $k => $v){
+
+            //拆分path
+            $data = explode(',',$v->type_path);
+
+            $count = count($data)-1;
+
+            $v->type_name = str_repeat('|--', $count).$v->type_name;
+        }
+        return view('admin.good.add', ['res'=>$res]);
+
+
     }
 
     /**
@@ -38,6 +64,43 @@ class GoodController extends Controller
     public function store(Request $request)
     {
         //
+
+//        $data = $request->all();
+//        dd($data);
+        $res = $request->except('_token','goods_pic');
+
+
+        $imgs = $request->hasFile('goods_pic');
+
+        if ($imgs) {
+
+            //遍历上传的图片
+            foreach ($request->file('goods_pic') as $k => $v){
+                //修改名字
+                $name = rand(11111,99999).time();
+
+                //获取后缀
+                $suffix = $v->getClientOriginalExtension();
+
+                //拼接图片路径
+                $v->move('./uploads', $name.'.'.$suffix);
+
+                $res['goods_pic'] = '/uploads/'.$name.'.'.$suffix;
+
+            }
+        }
+
+
+        $data = Good::insert($res);
+
+        if ($data) {
+
+            return redirect('/admin/good/')->with('success','添加成功');
+        } else {
+
+            return back()->with('success', '添加失败');
+        }
+
     }
 
     /**
